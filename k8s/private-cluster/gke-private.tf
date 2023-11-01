@@ -7,37 +7,50 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
 
+data "google_compute_subnetwork" "subnetwork" {
+  name    = var.subnetwork
+  project = var.project_id
+  region  = var.region
+}
+
+locals {
+  cluster_type = "private-zonal"
+}
+
+
 module "gke" {
   source                     = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  project_id                 = "evmos-gcp"
-  name                       = "gke-private-us"
-  region                     = "${var.region}"
-  zones                      = ["us-central1-a", "us-central1-b", "us-central1-f"]
-  network                    = "${var.project_id}-vpc-us1"
-  subnetwork                 = "${var.project_id}-private-subnet-${var.region}"
-  ip_range_pods              = "${var.region}-gke-pods"
-  ip_range_services          = "${var.region}-gke-services"
+  project_id                 = var.project_id
+  name                       = "${local.cluster_type}-cluster${var.cluster_name_suffix}"
+  region                     = var.region
+  zones                      = var.zones
+  network                    = var.network
+  subnetwork                 = var.subnetwork
+  ip_range_pods              = var.ip_range_pods
+  ip_range_services          = var.ip_range_services
   http_load_balancing        = false
   network_policy             = false
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = false
-  enable_private_endpoint    = false  // Should be turned to True in production for further isolation.
-                                      // indicates that the cluster is managed using the private IP address of the control plane API endpoint.
+  enable_private_endpoint    = true
   enable_private_nodes       = true
   master_ipv4_cidr_block     = "10.50.0.0/28"
-  # master_authorized_networks = [{
-  #   cidr_block   = "bastion-host-ip-address/28"   // Needs to be a reserved network and is required for private endpoints
-  #   display_name = "remote-client-gsaramite"
-  # }]
   master_global_access_enabled = true
+
+  master_authorized_networks = [
+    {
+      cidr_block   = data.google_compute_subnetwork.subnetwork.ip_cidr_range
+      display_name = "VPC"
+    },
+  ]
 
   node_pools = [
     {
       name                      = "default-node-pool"
       machine_type              = "e2-medium"
-      node_locations            = "us-central1-b,us-central1-c"
+      node_locations            = "us-central1-a,us-central1-b"
       min_count                 = 1
-      max_count                 = 3
+      max_count                 = 5
       local_ssd_count           = 0
       spot                      = false
       disk_size_gb              = 10
@@ -49,7 +62,7 @@ module "gke" {
       auto_repair               = true
       auto_upgrade              = true
       preemptible               = false
-      initial_node_count        = 2
+      initial_node_count        = 1
     },
   ]
 
