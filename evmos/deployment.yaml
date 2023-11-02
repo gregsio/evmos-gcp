@@ -28,6 +28,13 @@ spec:
           runAsNonRoot: true
           runAsUser: 1000
         image: gregsaram/evmos:1.0.0
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
         args:
           - evmosd --start
         ports:
