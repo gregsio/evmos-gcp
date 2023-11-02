@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evmos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: evmos
+  template:
+    metadata:
+      labels:
+        app: evmos
+    spec:
+      volumes:
+      - name: evmosnode0
+        persistentVolumeClaim:
+          claimName: evmosnode0
+      containers:
+      - name: evmosnode0
+        image: gregsaram/evmos:latest
+        args:
+          - evmosd --start
+        ports:
+          - containerPort: 26656
+            name: p2p
+          - containerPort: 26657
+            name: tmtrpc
+          - containerPort: 8545
+            name: ethrpc
+          - containerPort: 8546
+            name: websocket
+        resources: {}
+        volumeMounts:
+          - mountPath: /evmos
+            name: evmosnode0
