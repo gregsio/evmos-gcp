@@ -18,7 +18,16 @@ spec:
           claimName: evmosnode0
       containers:
       - name: evmosnode0
-        image: gregsaram/evmos:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+        image: gregsaram/evmos:1.0.0
         args:
           - evmosd --start
         ports:
@@ -30,7 +39,6 @@ spec:
             name: ethrpc
           - containerPort: 8546
             name: websocket
-        resources: {}
         volumeMounts:
           - mountPath: /evmos
             name: evmosnode0
