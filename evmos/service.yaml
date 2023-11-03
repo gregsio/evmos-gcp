@@ -5,7 +5,6 @@ metadata:
 spec:
   type: NodePort
   ports:
-    type: NodePort
     - name: p2p
       protocol: TCP
       port: 26656
@@ -18,14 +17,14 @@ spec:
       protocol: TCP
       port: 8545
       targetPort: 8545
-    - name: "websocket"
+    - name: websocket
       protocol: TCP
       port: 8546
       targetPort: 8546
-    - name: "telemetry"
+    - name: telemetry
       protocol: TCP
       port: 1317
-      targetPort: 13
+      targetPort: 1317
   selector:
     app: evmos
-17
+
