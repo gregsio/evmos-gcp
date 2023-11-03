@@ -12,6 +12,8 @@ spec:
       labels:
         app: evmos
     spec:
+      strategy:
+        type: recreate
       volumes:
       - name: evmosnode0
         persistentVolumeClaim:
@@ -46,6 +48,8 @@ spec:
             name: ethrpc
           - containerPort: 8546
             name: websocket
+          - containerPort: 1317
+            name: telemetry
         volumeMounts:
           - mountPath: /evmos
             name: evmosnode0

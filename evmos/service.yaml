@@ -22,7 +22,10 @@ spec:
       protocol: TCP
       port: 8546
       targetPort: 8546
+    - name: "telemetry"
+      protocol: TCP
+      port: 1317
+      targetPort: 13
   selector:
     app: evmos
-status:
-  loadBalancer: {}
+17
