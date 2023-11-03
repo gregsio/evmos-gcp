@@ -5,16 +5,21 @@ metadata:
 spec:
   type: NodePort
   ports:
+    type: NodePort
     - name: p2p
+      protocol: TCP
       port: 26656
       targetPort: 26656
     - name: tmtrpc
+      protocol: TCP
       port: 26657
       targetPort: 26657
     - name: ethrpc
+      protocol: TCP
       port: 8545
       targetPort: 8545
     - name: "websocket"
+      protocol: TCP
       port: 8546
       targetPort: 8546
   selector:
