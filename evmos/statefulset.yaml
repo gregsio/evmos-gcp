@@ -1,8 +1,7 @@
----
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: web
+  name: validator
 spec:
   selector:
     matchLabels:
@@ -14,19 +13,21 @@ spec:
       labels:
         app: evmos
     spec:
-      terminationGracePeriodSeconds: 10
+      #terminationGracePeriodSeconds: 10
       containers:
       - name: evmosnode
         securityContext:
+          fsGroup: 1000
+          runAsUser: 1000
+          runAsGroup: 1000
           allowPrivilegeEscalation: false
           capabilities:
             drop:
-              - ALL
+            - ALL
           privileged: false
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false # to be changed in prod
           runAsNonRoot: true
-          runAsUser: 1000
-        image: gregsaram/evmos:1.4.0
+        image: gregsaram/evmos:1.5.0
         resources:
           requests:
             memory: "64Mi"
@@ -34,29 +35,26 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
-        args:
-          - /bin/sh
-          - -c
-          - 'echo n | /usr/bin/local_node.sh --no-install'
+        args: ["sh", "-c", "echo n | /usr/bin/local_node.sh --no-install & sleep 84000s"]
         ports:
-          - containerPort: 26656
-            name: p2p
-          - containerPort: 26657
-            name: tmtrpc
-          - containerPort: 8545
-            name: ethrpc
-          - containerPort: 8546
-            name: websocket
-          - containerPort: 1317
-            name: telemetry
+        - containerPort: 26656
+          name: p2p
+        - containerPort: 26657
+          name: tmtrpc
+        - containerPort: 8545
+          name: ethrpc
+        - containerPort: 8546
+          name: websocket
+        - containerPort: 1317
+          name: telemetry
         volumeMounts:
-          - name: evmos-vol
-            mountPath: /evmos
+        - name: evmos-vol
+          mountPath: /evmos
   volumeClaimTemplates:
   - metadata:
       name: evmos-vol
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: ["ReadWriteOnce"]
       resources:
         requests:
           storage: 20Gi
