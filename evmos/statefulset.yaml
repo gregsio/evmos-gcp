@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  selector:
+    matchLabels:
+      app: evmos
+  serviceName: "evmos"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: evmos
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: evmosnode
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+        image: gregsaram/evmos:1.4.0
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        args:
+          - /bin/sh
+          - -c
+          - 'echo n | /usr/bin/local_node.sh --no-install'
+        ports:
+          - containerPort: 26656
+            name: p2p
+          - containerPort: 26657
+            name: tmtrpc
+          - containerPort: 8545
+            name: ethrpc
+          - containerPort: 8546
+            name: websocket
+          - containerPort: 1317
+            name: telemetry
+        volumeMounts:
+          - name: evmos-vol
+            mountPath: /evmos
+  volumeClaimTemplates:
+  - metadata:
+      name: evmos-vol
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi

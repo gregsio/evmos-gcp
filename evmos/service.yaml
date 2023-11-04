@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: evmos
 spec:
-  type: NodePort
+  clusterIP: None
   ports:
     - name: p2p
       protocol: TCP
@@ -28,3 +28,8 @@ spec:
   selector:
     app: evmos
 
+##how about 9090 ??
+
+    # the gRPC server (default port: 9090),
+    # the REST server (default port: 1317),
+    # the CometBFT RPC endpoint (default port: 26657).

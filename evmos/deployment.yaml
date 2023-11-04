@@ -1,64 +1,64 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: evmos
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: evmos
-  template:
-    metadata:
-      labels:
-        app: evmos
-    spec:
-      strategy:
-        type: recreate
-      initContainers:
-      - name: volume-permissions
-        image: busybox
-        command: ["sh", "-c", "chown -R 1000:1000 /evmos"]
-        volumeMounts:
-        - name: evmosnode0
-          mountPath: /evmos
-      volumes:
-      - name: evmosnode0
-        persistentVolumeClaim:
-          claimName: evmosnode0
-      containers:
-      - name: evmosnode0
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
-          runAsNonRoot: true
-          runAsUser: 1000
-        image: gregsaram/evmos:1.4.0
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
-        args:
-          - /bin/sh
-          - -c
-          - 'echo n | /usr/bin/local_node.sh --no-install'
-        ports:
-          - containerPort: 26656
-            name: p2p
-          - containerPort: 26657
-            name: tmtrpc
-          - containerPort: 8545
-            name: ethrpc
-          - containerPort: 8546
-            name: websocket
-          - containerPort: 1317
-            name: telemetry
-        volumeMounts:
-          - mountPath: /evmos
-            name: evmosnode0
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: evmos
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: evmos
+#   template:
+#     metadata:
+#       labels:
+#         app: evmos
+#     spec:
+#       strategy:
+#         type: recreate
+#       initContainers:
+#       - name: volume-permissions
+#         image: busybox
+#         command: ["sh", "-c", "chown -R 1000:1000 /evmos"]
+#         volumeMounts:
+#         - name: evmosnode0
+#           mountPath: /evmos
+#       volumes:
+#       - name: evmosnode0
+#         persistentVolumeClaim:
+#           claimName: evmosnode0
+#       containers:
+#       - name: evmosnode0
+#         securityContext:
+#           allowPrivilegeEscalation: false
+#           capabilities:
+#             drop:
+#               - ALL
+#           privileged: false
+#           readOnlyRootFilesystem: true
+#           runAsNonRoot: true
+#           runAsUser: 1000
+#         image: gregsaram/evmos:1.4.0
+#         resources:
+#           requests:
+#             memory: "64Mi"
+#             cpu: "250m"
+#           limits:
+#             memory: "128Mi"
+#             cpu: "500m"
+#         args:
+#           - /bin/sh
+#           - -c
+#           - 'echo n | /usr/bin/local_node.sh --no-install'
+#         ports:
+#           - containerPort: 26656
+#             name: p2p
+#           - containerPort: 26657
+#             name: tmtrpc
+#           - containerPort: 8545
+#             name: ethrpc
+#           - containerPort: 8546
+#             name: websocket
+#           - containerPort: 1317
+#             name: telemetry
+#         volumeMounts:
+#           - mountPath: /evmos
+#             name: evmosnode0
