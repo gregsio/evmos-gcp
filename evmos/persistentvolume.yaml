@@ -3,6 +3,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: evmosnode0
 spec:
+  selector:
+      matchLabels:
+        evmos-pv: "true"
   accessModes:
     - ReadWriteOnce
   resources:
@@ -10,3 +13,20 @@ spec:
       storage: 20Gi
   storageClassName: standard-rwo
 status: {}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: evmos-pv
+  labels:
+    evmos-pv: "true"
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard-rwo
+  ## Change volume type for production hostPath stores on node's filesystem
+  hostPath:
+    path: /evmos
