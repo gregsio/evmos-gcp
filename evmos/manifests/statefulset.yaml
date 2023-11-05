@@ -30,11 +30,11 @@ spec:
         image: gregsaram/evmos:1.7.0
         resources:
           requests:
-            memory: "3Gi"
+            memory: "20Gi"
             cpu: "2"
           limits:
-            memory: "8Gi"
-            cpu: "3"
+            memory: "25Gi"
+            cpu: "4"
         args: ["sh", "-c", "/usr/bin/testnet_node.sh -y --no-install & sleep 84000s"]
         ports:
         - containerPort: 26656
