@@ -7,7 +7,7 @@ spec:
     matchLabels:
       app: evmos
   serviceName: "evmos"
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
@@ -27,15 +27,15 @@ spec:
           privileged: true
           readOnlyRootFilesystem: false # to be changed in prod
           runAsNonRoot: false
-        image: gregsaram/evmos:1.6.0
+        image: gregsaram/evmos:1.7.0
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "250m"
+            memory: "3Gi"
+            cpu: "2"
           limits:
-            memory: "1Gi"
-            cpu: "500m"
-        args: ["sh", "-c", "echo n | /usr/bin/testnet_node.sh --no-install & sleep 84000s"]
+            memory: "8Gi"
+            cpu: "3"
+        args: ["sh", "-c", "/usr/bin/testnet_node.sh -y --no-install & sleep 84000s"]
         ports:
         - containerPort: 26656
           name: p2p
