@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 variable "gke_num_nodes" {
-  default     = 2
+  default     = 1
   description = "number of gke nodes"
 }
 
@@ -46,8 +46,8 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     # preemptible  = true
-    machine_type = "n1-standard-1"
-    disk_size_gb = 10
+    machine_type = "n1-standard-8"
+    disk_size_gb = 50
     local_ssd_count = 1
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
