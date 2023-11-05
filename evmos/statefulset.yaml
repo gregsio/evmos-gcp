@@ -27,7 +27,7 @@ spec:
           privileged: false
           readOnlyRootFilesystem: false # to be changed in prod
           runAsNonRoot: true
-        image: gregsaram/evmos:1.5.0
+        image: gregsaram/evmos:1.6.0
         resources:
           requests:
             memory: "64Mi"
