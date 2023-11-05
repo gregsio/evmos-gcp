@@ -17,25 +17,25 @@ spec:
       containers:
       - name: evmosnode
         securityContext:
-          fsGroup: 1000
-          runAsUser: 1000
-          runAsGroup: 1000
-          allowPrivilegeEscalation: false
+          fsGroup: 0
+          runAsUser: 0
+          runAsGroup: 0
+          allowPrivilegeEscalation: true
           capabilities:
             drop:
             - ALL
-          privileged: false
+          privileged: true
           readOnlyRootFilesystem: false # to be changed in prod
-          runAsNonRoot: true
+          runAsNonRoot: false
         image: gregsaram/evmos:1.6.0
         resources:
           requests:
-            memory: "64Mi"
+            memory: "512Mi"
             cpu: "250m"
           limits:
-            memory: "128Mi"
+            memory: "1Gi"
             cpu: "500m"
-        args: ["sh", "-c", "echo n | /usr/bin/local_node.sh --no-install & sleep 84000s"]
+        args: ["sh", "-c", "echo n | /usr/bin/testnet_node.sh --no-install & sleep 84000s"]
         ports:
         - containerPort: 26656
           name: p2p
