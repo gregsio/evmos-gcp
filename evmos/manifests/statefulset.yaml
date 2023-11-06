@@ -27,7 +27,7 @@ spec:
           privileged: true
           readOnlyRootFilesystem: false # to be changed in prod
           runAsNonRoot: false
-        image: gregsaram/evmos:1.8.4
+        image: gregsaram/evmos:15.0.0-rc2-testnet
         resources:
           requests:
             memory: "20Gi"
@@ -35,7 +35,7 @@ spec:
           limits:
             memory: "25Gi"
             cpu: "4"
-        args: ["sh", "-c", "/usr/bin/testnet_node.sh -y --no-install & sleep 84000s"]
+        args: ["sh", "-c", "/usr/bin/testnet_node.sh -y & sleep 84000s"]
         ports:
         - containerPort: 26656
           name: p2p

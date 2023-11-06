@@ -1,17 +1,21 @@
 
-FROM gregsaram/evmos:1.0.0
+FROM tharsishq/evmos:v15.0.0-rc2
 WORKDIR /root
 USER root
-RUN apk add --no-cache python3 py3-pip && pip3 install ijson
+
+RUN apk add lz4-libs
+
 COPY testnet_node.sh /usr/bin/testnet_node.sh
 RUN chmod +x /usr/bin/testnet_node.sh
-COPY genesis_edit.py /usr/bin/genesis_edit.py
-RUN chmod +x /usr/bin/genesis_edit.py
-# RUN addgroup -g 1000 evmos \
-# && adduser -S -h /home/evmos -D evmos -u 1000 -G evmos
+
+COPY statesync.sh /usr/bin/statesync.sh
+RUN chmod +x /usr/bin/statesync.sh
+
+COPY snapshot.sh /usr/bin/snapshot.sh
+RUN chmod +x /usr/bin/snapshot.sh
 
 # USER 1000
-# WORKDIR /home/evmos
+WORKDIR /evmos
 
 EXPOSE 26656 26657 1317 9090 8545 8546
 
