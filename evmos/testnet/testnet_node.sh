@@ -94,6 +94,7 @@ if [[ $overwrite == "y" || $overwrite == "Y" ]]; then
 	node_address=$(evmosd keys show -a "$VAL_KEY" --keyring-backend "$KEYRING" --home "$HOMEDIR")
 
 	# Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
+	evmosd tendermint unsafe-reset-all --home "$HOMEDIR"
 	evmosd init $MONIKER --chain-id "$CHAINID" --home "$HOMEDIR"
 
 	# Download Genesis file for testnet evmos_9000-4
