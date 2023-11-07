@@ -119,7 +119,7 @@ cd argocd
 terraform init
 terraform apply
 ```
-For more a secure setup exposed to the public use 
+For more a secure setup exposed to the public use
 
 ## Config ArgoCD API access (for test/demo only)
 
@@ -313,7 +313,8 @@ The third variable ‘_IMAGE_TAG’ will be used to assign a custom tag based ou
 
 ## K8s Clusters CI Pipeline
 
-With Terrform Cloud the Terrafrom state files will be safely stored encrypted at rest.
+With Terrform Cloud the Terrafrom state files will be safely stored encrypted at rest and GCP credentials will be safely stored as well, more info on [HashiCorp documentation](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/variables/managing-variables#sensitive-values)
+
 
 - See prerequisites section [here](https://developer.hashicorp.com/terraform/tutorials/cloud/kubernetes-consul-vault-pipeline#prerequisites)
 - Configure 2 different Terraform Cloud workspaces & GitHub repositories pointing respectively to `k8s/private-cluster` & `k8s/public-cluster
