@@ -7,11 +7,11 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
 
-data "google_compute_subnetwork" "subnetwork" {
-  name    = var.subnetwork
-  project = var.project_id
-  region  = var.region
-}
+# data "google_compute_subnetwork" "subnetwork" {
+#   name    = var.subnetwork
+#   project = var.project_id
+#   region  = var.region
+# }
 
 locals {
   cluster_type = "private-zonal"
@@ -29,20 +29,23 @@ module "gke" {
   ip_range_pods              = var.ip_range_pods
   ip_range_services          = var.ip_range_services
   http_load_balancing        = false
-  network_policy             = false
+  network_policy             = true
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = false
-  enable_private_endpoint    = true
+  enable_private_endpoint    = false # turn to true in production environment
   enable_private_nodes       = true
   master_ipv4_cidr_block     = "10.50.0.0/28"
   master_global_access_enabled = true
+  add_cluster_firewall_rules  = true
+  gateway_api_channel         = "CHANNEL_STANDARD" 
 
-  master_authorized_networks = [
-    {
-      cidr_block   = data.google_compute_subnetwork.subnetwork.ip_cidr_range
-      display_name = "VPC"
-    },
-  ]
+  # enable in production.
+  # master_authorized_networks = [
+  #   {
+  #     cidr_block   = data.google_compute_subnetwork.subnetwork.ip_cidr_range
+  #     display_name = "VPC"
+  #   },
+  # ]
 
   node_pools = [
     {

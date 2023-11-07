@@ -1,6 +1,6 @@
 # Private Zonal Cluster Terraform Setup
 
-This example illustrates how to create a simple private cluster in a single zone.
+Create a simple private cluster in a single zone.
 
 ## Inputs
 
