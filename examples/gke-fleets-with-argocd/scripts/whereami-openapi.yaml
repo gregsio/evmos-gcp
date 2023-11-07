@@ -1,0 +1,10 @@
+swagger: "2.0"
+info:
+  description: "Cloud Endpoints DNS"
+  title: "Cloud Endpoints DNS"
+  version: "1.0.0"
+paths: {}
+host: "whereami.endpoints.evmos-gcp.cloud.goog"
+x-google-endpoints:
+- name: "whereami.endpoints.evmos-gcp.cloud.goog"
+  target: "34.95.112.78"

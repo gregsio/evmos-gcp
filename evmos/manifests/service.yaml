@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: evmos
+spec:
+  clusterIP: None
+  ports:
+    - name: p2p
+      protocol: TCP
+      port: 26656
+      targetPort: 26656
+    - name: tmtrpc
+      protocol: TCP
+      port: 26657
+      targetPort: 26657
+    - name: ethrpc
+      protocol: TCP
+      port: 8545
+      targetPort: 8545
+    - name: websocket
+      protocol: TCP
+      port: 8546
+      targetPort: 8546
+    - name: telemetry
+      protocol: TCP
+      port: 1317
+      targetPort: 1317
+    - name: promotheus
+      protocol: TCP
+      port: 26660
+      targetPort: 26660
+  selector:
+    app: evmos
+
+##how about 9090 ??
+
+    # the gRPC server (default port: 9090),
+    # the REST server (default port: 1317),
+    # the CometBFT RPC endpoint (default port: 26657).
