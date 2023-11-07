@@ -1,6 +1,41 @@
-# evmos-gcp
-Google Kubernetes Engine (GKE) clusters on GCP, utilizing ArgoCD for multi-cluster application management, setting up monitoring, crafting a robust CI pipeline, and public exposure of services.
+# Evmos Validator on Google Kubernetes Engine
 
+Evmos GCP aims to provide a configured EVMOS `Testnet` validator, a Google Kubernetes Engine (GKE) environement and a CI/CP pipeline for automation purposes.
+
+
+## Summary Table
+
+- [Features](##features)
+- [Prerequisites](#prerequisites)
+- [GKE Cluster Creation on GCP](#gke-cluster-creation-on-gcp)
+- [ArgoCD Installation](#argocd-instalation)
+- [Creation of a private GKE cluster](#creation-of-a-private-gke-cluster)
+- [Multi-Cluster Management with ArgoCD](#multi-cluster-management-with-argocd)
+- [Monitoring Setup](#monitoring-setup)
+- [Deployment of the Evmos Application](#deployement-of-the-evmos-application)
+- [Continuous Integration (CI) Pipeline](#continuous-integration-ci-pipeline)
+- [Troubleshooting](#troubleshooting)
+- [Sources](#sources)
+- [Join Evmos Validator's Community](#join-evmos-validators-community)
+
+## Features
+
+`k8s` directory
+- Terraform manifests to deploy GKE clusters on Goocle Cloud Platform (GCP):
+    * Public cluster (could be used to run sentry nodes)
+    * Private cluster to keep validator(s) isolated
+    * Gateway controller or Athos Service Mesh Gateway
+    * Monitoring with Promethus and Grafana
+
+`Evmos` directory
+- `manfiests` for deployment of the Evmos validator. Watched by ArgoCD
+- `testnet-validator` Dockerfile with a set of script following different fashions of setting a testnet validator
+
+`ArgoCD` directory
+- ArgoCD install for Continuous Deployment
+    - ArgoCD for multi-cluster application management
+
+Instructions to set CI/CD Pipelines with Google CloudBuild script and associated template
 
 
 # Prerequisites
@@ -77,12 +112,14 @@ kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | gre
 
 # ArgoCD Instalation
 
+
 Run Terraform code in argocd directory
 ```bash
 cd argocd
 terraform init
 terraform apply
 ```
+For more a secure setup exposed to the public use 
 
 ## Config ArgoCD API access (for test/demo only)
 
@@ -176,6 +213,20 @@ The Evmos/testnet directory contains a custom set of scripts and a Dockerfile to
 Update the k8s/manifests/statfulset.yaml if you want to use a different script at startup
 The 3 scripts are in the container's PATH.
 
+## Monitoring
+
+ Follow this instructions: [Graphana Cosmos Dashboard](https://github.com/zhangyelong/cosmos-dashboard)
+
+The testet-validator Docker container is already configure with the following thanks to the `evmos/tesnet-validator/testnet_node.sh` script.
+```bash
+		sed -i 's/prometheus = false/prometheus = true/' "$CONFIG"
+		sed -i 's/prometheus-retention-time  = "0"/prometheus-retention-time  = "1000000000000"/g' "$APP_TOML"
+```
+
+The tendermint metrics, is accessible on port is 26660 as configured by `evmos/manifests/service.yaml` & `evmos/manifests/statefulset.yaml`
+
+The Prometheus config requires an update to [add aditional targets](https://github.com/zhangyelong/cosmos-dashboard#configure-prometheus-targets)
+
 
 ## Use ArgoCD for Continuous Deployment(CD Pipeline)
 
@@ -223,23 +274,88 @@ Once the image with the new tag got pushed to the registry, it will get updated 
 ## Evmos Validator CI Pipeline
 This section automates the steps outlined in "Semi-automated Deployement Workflow".
 2 CI files are provided to achieve this:
-- evmos/manifests/statefulset.yaml.tpl
-- evmos/testnet/cloudbuild.yaml
+- `evmos/manifests/statefulset.yaml.tpl`
+- `evmos/testnet/cloudbuild.yaml`
 
 Prerequistes:
-- Move the code under evmos/testnet to a new repository (hard requirement)
+- Move the code under evmos/testnet to a *separate* GitHub *source repository* (hard requirement)
 
-Confgure CloudBuild [...]
+### Configuring Cloud Build GitHub Trigger
+
+To set up the GitHub trigger we first need to connect to the *source repository* and then configure a trigger. The steps involved in connecting the cloud build to the source repository are given [here](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers#connect_repo).
+
+Once the repository got connected we can configure a trigger by following the steps given [here](https://cloud.google.com/build/docs/automating-builds/create-manage-triggers#build_trigger).
+
+You should now have a cloud build trigger that is connected to your *source repository*
+
+Go to CloudBuild GCP console
+- Add the three environmental variables we are using in the cloud build steps
+- Associate a custom service account, see further info on `user-specified service accounts` setup [here](https://cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts)
+
+```
+"roles/iam.serviceAccountUser",
+"roles/logging.logWriter",
+"roles/secretmanager.secretAccessor",
+"roles/artifactregistry.writer"
+```
+
+**SUBSTITUTION VARIABLES**  [more info here](https://cloud.google.com/build/docs/configuring-builds/substitute-variable-values)
+`_ARTIFACT_REPO` your *source repository* name
+`_CD_BRANCH` your *source repository* branch
+`IMAGE_TAG` set to `$BRANCH_NAME#*`
+
+'_ARTIFACT_REPO’ is used to set the artifact repository name. we can pass the repository name based on our environment like dev, stage, prod, or on your personal choice.
+The variable ‘_CD_BRANCH’ refers to the branch of the second git repository i.e the Kubernetes manifest repository.
+
+The third variable ‘_IMAGE_TAG’ will be used to assign a custom tag based out of branch name or release tag
+
+![diagram](assets/ci-diagram.png)
 
 ## K8s Clusters CI Pipeline
+
 With Terrform Cloud the Terrafrom state files will be safely stored encrypted at rest.
-[...]
+
+- See prerequisites section [here](https://developer.hashicorp.com/terraform/tutorials/cloud/kubernetes-consul-vault-pipeline#prerequisites)
+- Configure 2 different Terraform Cloud workspaces & GitHub repositories pointing respectively to `k8s/private-cluster` & `k8s/public-cluster
+- Configure run triggers, see documentation (here)[https://developer.hashicorp.com/terraform/tutorials/cloud/cloud-run-triggers#configure-a-run-trigger]
 
 
-# Evmos's documentation:
+# Troubleshooting
 
-- [Minimum Requirements](https://docs.evmos.org/validate/#minimum-requirements)
+## Master Authorized Network
+When creating a private cluster with a [private endpoint](https://cloud.google.com/kubernetes-engine/docs/how-to/authorized-networks#benefits_with_private_clusters) (`enable_private_endpoint = true`),
+your cluster will **not** have a publicly addressable endpoint.
+
+When using this setting, any CIDR ranges listed in the `master_authorized_networks` configuration *must* come from your private IP space.
+If you include a CIDR block outside your private space, you might see this error:
+
+```
+Error: Error waiting for creating GKE cluster: Invalid master authorized networks: network "73.89.231.174/32" is not a reserved network, which is required for private endpoints.
+
+  on .terraform/modules/gke-cluster-dev.gke/terraform-google-kubernetes-engine-9.2.0/modules/beta-private-cluster/cluster.tf line 22, in resource "google_container_cluster" "primary":
+  22: resource "google_container_cluster" "primary" {
+```
+
+To resolve this error, update your configuration to either:
+
+* Enable a public endpoint (with `enable_private_endpoint = false`)
+* Update your `master_authorized_networks` configuration to only use CIDR blocks from your private IP space.
+
+
+# Sources
+
+- [Terraform Google modules](https://github.com/terraform-google-modules)
+- [Terraform Google Kubernetes Engine module](https://github.com/terraform-google-modules/terraform-google-kubernetes-engine)
+- [Why Deploy with Terrafrom?](https://developer.hashicorp.com/terraform/tutorials/kubernetes/gke#why-deploy-with-terraform)
+
+## Evmos's documentation
+
+- [Validator Minimum Requirements](https://docs.evmos.org/validate/#minimum-requirements)
 - [Run a Validator](https://docs.evmos.org/validate/setup-and-configuration/run-a-validator)
 - [Common Problems](https://docs.evmos.org/validate/setup-and-configuration/run-a-validator#common-problems)
 - [Testnet Documentation](https://docs.evmos.org/validate/testnet)
 - [Testnet Faucet](https://faucet.evmos.dev/)
+
+# Join Evmos Validator's Community
+
+- [Evmos Discord Channel](https://discord.com/invite/evmos)

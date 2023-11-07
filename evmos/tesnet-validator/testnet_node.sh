@@ -169,3 +169,10 @@ evmosd start \
 	--log_level $LOGLEVEL \
 	--json-rpc.api eth,txpool,personal,net,debug,web3 \
 	--home "$HOMEDIR"
+
+
+evmosd start \
+	--metrics "" \
+	--log_level info \
+	--json-rpc.api eth,txpool,personal,net,debug,web3 \
+	--home "/evmos/evmosd"
