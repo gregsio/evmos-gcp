@@ -47,6 +47,8 @@ spec:
           name: websocket
         - containerPort: 1317
           name: telemetry
+        - containerPort: 26660
+          name: promotheus
         volumeMounts:
         - name: evmos-vol
           mountPath: /evmos

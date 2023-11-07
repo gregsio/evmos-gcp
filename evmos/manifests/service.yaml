@@ -25,6 +25,10 @@ spec:
       protocol: TCP
       port: 1317
       targetPort: 1317
+    - name: promotheus
+      protocol: TCP
+      port: 26660
+      targetPort: 26660
   selector:
     app: evmos
 
