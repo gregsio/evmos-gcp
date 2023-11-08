@@ -14,8 +14,8 @@ RUN chmod +x /usr/bin/statesync.sh
 COPY snapshot.sh /usr/bin/snapshot.sh
 RUN chmod +x /usr/bin/snapshot.sh
 
-# USER 1000
-WORKDIR /evmos
+USER 1000
+WORKDIR /home/evmos
 
 EXPOSE 26656 26657 1317 9090 8545 8546
 

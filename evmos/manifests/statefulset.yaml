@@ -17,17 +17,16 @@ spec:
       containers:
       - name: evmosnode
         securityContext:
-          fsGroup: 0
-          runAsUser: 0
-          runAsGroup: 0
-          allowPrivilegeEscalation: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
-          privileged: true
-          readOnlyRootFilesystem: false # to be changed in prod
-          runAsNonRoot: false
-        image: gregsaram/evmos:15.0.0-rc2-testnet-0.3
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+        image: gregsaram/evmos:15.0.0-rc2-testnet-0.5
         resources:
           requests:
             memory: "20Gi"
@@ -51,7 +50,7 @@ spec:
           name: promotheus
         volumeMounts:
         - name: evmos-vol
-          mountPath: /evmos
+          mountPath: /home/evmos
   volumeClaimTemplates:
   - metadata:
       name: evmos-vol
