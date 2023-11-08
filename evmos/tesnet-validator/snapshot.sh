@@ -12,7 +12,7 @@ MONIKER="testnetvalidator-gregsio"
 KEYRING="test"
 KEYALGO="eth_secp256k1"
 LOGLEVEL="info"
-HOMEDIR="/evmos/evmosd"
+HOMEDIR="~/.evmosd"
 CONFIGDIR="$HOMEDIR/config"
 DATADIR="$HOMEDIR/data"
 

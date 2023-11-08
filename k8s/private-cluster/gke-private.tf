@@ -37,7 +37,7 @@ module "gke" {
   master_ipv4_cidr_block     = "10.50.0.0/28"
   master_global_access_enabled = true
   add_cluster_firewall_rules  = true
-  gateway_api_channel         = "CHANNEL_STANDARD" 
+  gateway_api_channel         = "CHANNEL_STANDARD"
 
   # enable in production.
   # master_authorized_networks = [
@@ -50,7 +50,7 @@ module "gke" {
   node_pools = [
     {
       name                      = "default-node-pool"
-      machine_type              = "e2-medium"
+      machine_type              = "n1-standard-8"
       node_locations            = "us-central1-a,us-central1-b"
       min_count                 = 1
       max_count                 = 5
