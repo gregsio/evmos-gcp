@@ -31,7 +31,3 @@ variable "ip_range_pods" {
 variable "ip_range_services" {
   description = "The secondary ip range to use for services"
 }
-
-variable "sentry_service_subnet" {
-  description = "Sentry service subnet to grant access only"
-}
