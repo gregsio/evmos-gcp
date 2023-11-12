@@ -83,13 +83,12 @@ terraform apply
 
 Verify with gcloud CLI
 ```bash
-gcloud container clusters describe $(terraform output -raw kubernetes_cluster_name) --region europe-west1 --format='default(locations)'
+gcloud container clusters describe $(terraform output -raw kubernetes_cluster_name) --region us-central1 --format='default(locations)'
 ```
 Expected output should be similar to this
     locations:
     - europe-west1-b
     - europe-west1-c
-    - europe-west1-d
 
 
 ## Install Kubernetes Dashboard (optional)
@@ -119,27 +118,52 @@ cd argocd
 terraform init
 terraform apply
 ```
-For more a secure setup exposed to the public use
+For a secure setup exposed to the public Internet a proper TLS setup with OAuth2 and/or SAML authentication is required.
+More on this topic here:
+ - https://argo-cd.readthedocs.io/en/stable/operator-manual/security/
+ - https://argo-cd.readthedocs.io/en/stable/operator-manual/tls/
 
-## Config ArgoCD API access (for test/demo only)
 
-Openning ArgoCD to Public LoadBalancer with no Access Control is a security risk
-Use for short term demonstration purpose or use port forwarding instead !
+Verify the instalation
 ```bash
 gcloud auth login
-kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 kubectl get all -n argocd
 ```
+
+For demonstration purpose we can access access ArgoCD using port-forwading over http.
+Fetch the default admin user's password
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+Login ArgoCD CLI with user admin & password fetched in previous command.
+
+```bash
+argocd login --port-forward --port-forward-namespace argocd --plaintext
+```
+
+As an alternative change the argocd-server service type to `LoadBalancer`:
+
+```bash
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+```
+
+**If you decide to use port forwarding instead of loadbalancing you need to add the following after all ArgoCD commands**
+
+`--port-forward --port-forward-namespace argocd --plaintext`
+
+
+
+More info on connecting to ArgoCD is available on the official documentation:
+
+- [Getting Started](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+- [Understand The Basics](https://argo-cd.readthedocs.io/en/stable/understand_the_basics/)
+
 
 ## Test ArgoCD setup with a basic Nginx app
 
 Let's use a simple Nginx Deployment Test on ArgoCD's GKE cluster
 Fetch argocd password and login to the cli
 
-```bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-```
 Create a new ArgoCD deployment of test nginx app
 ```bash
 argocd app create argocd-demo --repo https://github.com/gregsio/argocd-demo --path yamls --dest-namespace default --dest-server https://kubernetes.default.svc
@@ -152,15 +176,28 @@ terraform init
 terraform apply
 ```
 
+Add the newly created cluster's credentials/context to your kubeconfig
+```bash
+gcloud container clusters get-credentials private-cluster-us --region=us-central1
+```
+
+
 # Multi-Cluster Management with ArgoCD
 
 ## Add a New GKE Private Cluster to ArgoCD
 
+
 ```bash
+
 gcloud container clusters list --region=us-central1
+
+NAME                LOCATION     MASTER_VERSION  MASTER_IP      MACHINE_TYPE  NODE_VERSION    NUM_NODES  STATUS
+private-cluster-us  us-central1  1.27.3-gke.100  10.0.0.2       e2-medium     1.27.3-gke.100  1          RUNNING
+public-cluster-us   us-central1  1.27.3-gke.100  34.68.198.203  e2-medium     1.27.3-gke.100  3          RUNNING
+
 kubectl config get-contexts
-argocd cluster add gke_evmos-gcp_us-central1_gke-private-us
-argocd cluster list
+argocd cluster add private-cluster-us --port-forward --port-forward-namespace argocd --plaintext
+argocd cluster list --port-forward --port-forward-namespace argocd --plaintext
 ```
  the ouput should show both cluster as follow
 
@@ -190,7 +227,11 @@ cd kube-prometheus
 Install Promotheus & Graphana in a `monitoring` namespace
 ```bash
 kubectl apply --server-side -f manifests/setup
-kubectl wait \\n\t--for condition=Established \\n\t--all CustomResourceDefinition \\n\t--namespace=monitoring
+
+kubectl wait \
+	--for condition=Established \
+	--all CustomResourceDefinition \
+	--namespace=monitoring
 kubectl apply -f manifests/
 ```
 
@@ -239,10 +280,24 @@ Create the *Evmos* application in ArgoCD via ArgoCD CLI
 argocd app create evmos \
     --repo https://github.com/gregsio/evmos-gcp \
     --path evmos/manifests \
-    --revision dev \
+    --revision main \
     --dest-namespace evmostestnet \
-    --dest-server  https://kubernetes.default.svc
+    --dest-server  https://kubernetes.default.svc \
+    --port-forward --port-forward-namespace argocd --plaintext
 ```
+
+Deployment for private cluster
+
+```bash
+argocd app create evmos \
+    --repo https://github.com/gregsio/evmos-gcp \
+    --path evmos/manifests \
+    --revision main \
+    --dest-namespace evmostestnet \
+    --dest-server  https://35.193.253.172 \   ## change to match with your setup
+    --port-forward --port-forward-namespace argocd --plaintext
+```
+
 
 Deployement Workflow:
 
@@ -253,7 +308,6 @@ Deployement Workflow:
 4. Sync the *Evmos* application with ArgoCD UI
 
 You can also activate ArgoCD auto sync, so k8s manifets are applied.
-
 To automate the steps detailed in this section keep reading...
 
 # Continuous Integration (CI) Pipeline

@@ -1,14 +1,15 @@
 # google_client_config and kubernetes provider must be explicitly specified like the following.
 data "google_client_config" "default" {}
 
-data "google_compute_subnetwork" "subnetwork" {
-  name    = var.sentry_service_subnet
-  project = var.project_id
-  region  = var.region
-   depends_on = [
-    module.vpc
-  ]
- }
+# Uncomment and use this ressource to fetch your Dedicated Interconnect
+# data "google_compute_subnetwork" "subnetwork" {
+#   name    = var.interconnect_subnet
+#   project = var.project_id
+#   region  = var.region
+#    depends_on = [
+#     module.vpc
+#   ]
+#  }
 
 locals {
   cluster_type = "private"
@@ -26,18 +27,27 @@ module "gke" {
   ip_range_pods              = var.ip_range_pods
   ip_range_services          = var.ip_range_services
   http_load_balancing        = false
-  network_policy             = true
+  network_policy             = false
   horizontal_pod_autoscaling = true
   filestore_csi_driver       = false
-  enable_private_endpoint    = true
+  enable_private_endpoint    = false # can be switched to true if you want access from a Dedicated Interconnect
   enable_private_nodes       = true
   master_global_access_enabled = false
   add_cluster_firewall_rules  = true
 
   master_authorized_networks = [
+    # Uncomment to authorized control plane acccess from your Dedicated Interconnect
+    # {
+    #   cidr_block   = data.google_compute_subnetwork.subnetwork.ip_cidr_range
+    #   display_name = "VPC"
+    # },
     {
-      cidr_block   = data.google_compute_subnetwork.subnetwork.ip_cidr_range
-      display_name = "VPC"
+      cidr_block = "${var.controller_public_ip}"
+      display_name = "controller"
+    },
+    {
+      cidr_block = "${var.argocd_k8s_master_ip}"
+      display_name = "argocd k8s cluster master IP"
     },
   ]
 
@@ -45,13 +55,14 @@ module "gke" {
     {
       name                      = "default-node-pool"
       machine_type              = "n1-standard-8"
-      node_locations            = "us-central1-a,us-central1-b"
+    #  machine_type              = "e2-medium"
+      node_locations            = "us-central1-a"
       min_count                 = 1
       max_count                 = 1
       local_ssd_count           = 0
       spot                      = false
       disk_size_gb              = 100
-      disk_type                 = "pd-standard" ## switch to SSDs when ready to launch validator. I/O intensive workload
+      disk_type                 = "pd-standard" ## switch to SSDs when ready to launch validator. I/O intensive workload.
       image_type                = "COS_CONTAINERD"
       enable_gcfs               = false
       enable_gvnic              = false

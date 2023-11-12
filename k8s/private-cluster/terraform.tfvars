@@ -9,4 +9,3 @@ network               = "evmos-validator-vpc"
 region                = "us-central1"
 subnetwork            = "validator-subnet-us-central1"
 zones                 = ["us-central1-a", "us-central1-b"]
-sentry_service_subnet = "sentry-subnet-us-central1"

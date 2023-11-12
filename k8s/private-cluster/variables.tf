@@ -32,6 +32,10 @@ variable "ip_range_services" {
   description = "The secondary ip range to use for services"
 }
 
-variable "sentry_service_subnet" {
-  description = "Sentry service subnet to grant access only"
+variable "controller_public_ip" {
+  description = "Public IP to grant access only and manage the cluster from"
+}
+
+variable "argocd_k8s_master_ip" {
+  description = "ArgoCD K8s cluster's master IP"
 }
