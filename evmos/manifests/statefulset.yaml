@@ -15,10 +15,17 @@ spec:
     spec:
       #terminationGracePeriodSeconds: 10
       containers:
+      # - name: bbsidecar
+      #   image: busybox:1.28
+      #   command: ['sh', '-c', 'chown -R 1000:1000 /home/evmos & sleep 3600']
+      #   volumeMounts:
+      #   - name: evmos-vol
+      #     mountPath: /home/evmos
       - name: evmosnode
         securityContext:
           runAsUser: 1000
           runAsGroup: 1000
+          fsGroup: 1000
           allowPrivilegeEscalation: false
           capabilities:
             drop:
@@ -54,8 +61,10 @@ spec:
   volumeClaimTemplates:
   - metadata:
       name: evmos-vol
+      pv.beta.kubernetes.io/gid: "1000"
     spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
           storage: 20Gi
+      storageClassName: standard-rwo

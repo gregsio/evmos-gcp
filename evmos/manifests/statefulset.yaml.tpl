@@ -15,18 +15,24 @@ spec:
     spec:
       #terminationGracePeriodSeconds: 10
       containers:
+      # - name: bbsidecar
+      #   image: busybox:1.28
+      #   command: ['sh', '-c', 'chown -R 1000:1000 /home/evmos & sleep 3600']
+      #   volumeMounts:
+      #   - name: evmos-vol
+      #     mountPath: /home/evmos
       - name: evmosnode
         securityContext:
-          fsGroup: 0
-          runAsUser: 0
-          runAsGroup: 0
-          allowPrivilegeEscalation: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          fsGroup: 1000
+          allowPrivilegeEscalation: false
           capabilities:
             drop:
             - ALL
-          privileged: true
-          readOnlyRootFilesystem: false # to be changed in prod
-          runAsNonRoot: false
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
         image: us-docker.pkg.dev/GOOGLE_CLOUD_PROJECT/evmos/evmosdtestnet:COMMIT_SHA
         resources:
           requests:
@@ -35,7 +41,7 @@ spec:
           limits:
             memory: "25Gi"
             cpu: "4"
-        args: ["sh", "-c", "/usr/bin/testnet_node.sh -y & sleep 84000s"]
+        args: ["sh", "-c", "/usr/bin/testnet_node.sh -y -s & sleep 84000s"]  ## sleeps for troubleshooting
         ports:
         - containerPort: 26656
           name: p2p
@@ -47,14 +53,18 @@ spec:
           name: websocket
         - containerPort: 1317
           name: telemetry
+        - containerPort: 26660
+          name: promotheus
         volumeMounts:
         - name: evmos-vol
-          mountPath: /evmos
+          mountPath: /home/evmos
   volumeClaimTemplates:
   - metadata:
       name: evmos-vol
+      pv.beta.kubernetes.io/gid: "1000"
     spec:
       accessModes: ["ReadWriteOnce"]
       resources:
         requests:
           storage: 20Gi
+      storageClassName: standard-rwo
