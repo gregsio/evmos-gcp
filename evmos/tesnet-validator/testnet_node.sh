@@ -9,7 +9,7 @@ KEYRING="test"
 KEYALGO="eth_secp256k1"
 LOGLEVEL="info"
 # Set dedicated home directory for the evmosd instance
-HOMEDIR="~/.evmosd"
+HOMEDIR="${HOME}/.evmosd"
 CONFIGDIR="$HOMEDIR/config"
 
 # to trace evm
