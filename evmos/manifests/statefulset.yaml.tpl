@@ -33,7 +33,7 @@ spec:
           privileged: false
           readOnlyRootFilesystem: true
           runAsNonRoot: true
-        image: us-docker.pkg.dev/GOOGLE_CLOUD_PROJECT/evmos/evmosdtestnet:COMMIT_SHA
+        image: us-docker.pkg.dev/GOOGLE_CLOUD_PROJECT/evmosd/evmosdtestnet:COMMIT_SHA
         resources:
           requests:
             memory: "20Gi"

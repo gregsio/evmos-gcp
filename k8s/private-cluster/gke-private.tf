@@ -34,7 +34,7 @@ module "gke" {
   enable_private_nodes       = true
   master_global_access_enabled = false
   add_cluster_firewall_rules  = true
-
+  grant_registry_access       = true
   master_authorized_networks = [
     # Uncomment to authorized control plane acccess from your Dedicated Interconnect
     # {
