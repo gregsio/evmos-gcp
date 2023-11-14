@@ -33,7 +33,8 @@ spec:
           privileged: false
           readOnlyRootFilesystem: true
           runAsNonRoot: true
-        image: us-docker.pkg.dev/evmos-gcp/evmosd/evmosdtestnet:3e2b032
+        #image: us-docker.pkg.dev/evmos-gcp/evmosd/evmosdtestnet:3e2b032
+        image: gregsaram/evmos:15.0.0-rc2-testnet-0.5
         resources:
           requests:
             memory: "20Gi"
